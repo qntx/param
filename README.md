@@ -13,10 +13,10 @@ And can be embedded in structs, for instance with the following definition:
 ```go
 obj := struct {
     // RequiredID is a required, nullable field
-    RequiredID     nullable.Nullable[int]     `json:"id"`
+    RequiredID     null.Nullable[int]     `json:"id"`
     // OptionalString is an optional, nullable field
     // NOTE that no pointer is required, only `omitempty`
-    OptionalString nullable.Nullable[string] `json:"optionalString,omitempty"`
+    OptionalString null.Nullable[string] `json:"optionalString,omitempty"`
 }{}
 ```
 
