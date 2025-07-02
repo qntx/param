@@ -23,8 +23,8 @@ func TestNullable(t *testing.T) {
 	require.Equal(t, myObj, Obj{Foo: nullable.Nullable[string]{true: "bar"}})
 	require.False(t, myObj.Foo.IsNull())
 	require.True(t, myObj.Foo.IsSpecified())
-	value, err := myObj.Foo.Get()
-	require.NoError(t, err)
+	value, ok := myObj.Foo.Get()
+	require.True(t, ok)
 	require.Equal(t, "bar", value)
 	require.Equal(t, "bar", myObj.Foo.MustGet())
 	// serialize back to json: leads to the same data
@@ -37,8 +37,8 @@ func TestNullable(t *testing.T) {
 	require.Equal(t, myObj, Obj{Foo: nil})
 	require.False(t, myObj.Foo.IsNull())
 	require.False(t, myObj.Foo.IsSpecified())
-	_, err = myObj.Foo.Get()
-	require.ErrorContains(t, err, "value is not specified")
+	_, ok = myObj.Foo.Get()
+	require.False(t, ok)
 	// serialize back to json: leads to the same data
 	require.Equal(t, data, serialize(myObj, t))
 
@@ -49,8 +49,8 @@ func TestNullable(t *testing.T) {
 	require.Equal(t, myObj, Obj{Foo: nullable.Nullable[string]{false: ""}})
 	require.True(t, myObj.Foo.IsNull())
 	require.True(t, myObj.Foo.IsSpecified())
-	_, err = myObj.Foo.Get()
-	require.ErrorContains(t, err, "value is null")
+	_, ok = myObj.Foo.Get()
+	require.False(t, ok)
 	require.Panics(t, func() { myObj.Foo.MustGet() })
 	// serialize back to json: leads to the same data
 	require.Equal(t, data, serialize(myObj, t))

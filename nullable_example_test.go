@@ -246,9 +246,9 @@ func ExampleNullable_unmarshalRequired() {
 	fmt.Println("Zero value:")
 	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
-	val, err := obj.Name.Get()
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+	val, ok := obj.Name.Get()
+	if !ok {
+		fmt.Printf("Error: %v\n", "value is not specified or null")
 		return
 	}
 	fmt.Printf("obj.Name.Get(): %#v <nil>\n", val)
@@ -269,9 +269,9 @@ func ExampleNullable_unmarshalRequired() {
 	fmt.Println("Value:")
 	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
-	val, err = obj.Name.Get()
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+	val, ok = obj.Name.Get()
+	if !ok {
+		fmt.Printf("Error: %v\n", "value is not specified or null")
 		return
 	}
 	fmt.Printf("obj.Name.Get(): %#v <nil>\n", val)
@@ -349,9 +349,9 @@ func ExampleNullable_unmarshalOptional() {
 	fmt.Println("Zero value:")
 	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
-	val, err := obj.Name.Get()
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+	val, ok := obj.Name.Get()
+	if !ok {
+		fmt.Printf("Error: %v\n", "value is not specified or null")
 		return
 	}
 	fmt.Printf("obj.Name.Get(): %#v <nil>\n", val)
@@ -372,9 +372,9 @@ func ExampleNullable_unmarshalOptional() {
 	fmt.Println("Value:")
 	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
-	val, err = obj.Name.Get()
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+	val, ok = obj.Name.Get()
+	if !ok {
+		fmt.Printf("Error: %v\n", "value is not specified or null")
 		return
 	}
 	fmt.Printf("obj.Name.Get(): %#v <nil>\n", val)

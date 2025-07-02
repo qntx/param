@@ -3,7 +3,6 @@ package nullable
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 )
 
 // Nullable is a generic type, which implements a field that can be one of three states:
@@ -39,23 +38,23 @@ func NewNullNullable[T any]() Nullable[T] {
 	return n
 }
 
-// Get retrieves the underlying value, if present, and returns an error if the value was not present
-func (t Nullable[T]) Get() (T, error) {
+// Get retrieves the underlying value, if present, and returns a boolean indicating whether the value was present
+func (t Nullable[T]) Get() (T, bool) {
 	var empty T
 	if t.IsNull() {
-		return empty, errors.New("value is null")
+		return empty, false
 	}
 	if !t.IsSpecified() {
-		return empty, errors.New("value is not specified")
+		return empty, false
 	}
-	return t[true], nil
+	return t[true], true
 }
 
 // MustGet retrieves the underlying value, if present, and panics if the value was not present
 func (t Nullable[T]) MustGet() T {
-	v, err := t.Get()
-	if err != nil {
-		panic(err)
+	v, ok := t.Get()
+	if !ok {
+		panic("value is not specified")
 	}
 	return v
 }
