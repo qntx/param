@@ -1,116 +1,138 @@
-package nullable
+package null
 
 import (
 	"bytes"
 	"encoding/json"
 )
 
-// Nullable is a generic type, which implements a field that can be one of three states:
-//
-// - field is not set in the request
-// - field is explicitly set to `null` in the request
-// - field is explicitly set to a valid value in the request
-//
-// Nullable is intended to be used with JSON marshalling and unmarshalling.
-//
-// Internal implementation details:
-//
-// - map[true]T means a value was provided
-// - map[false]T means an explicit null was provided
-// - nil or zero map means the field was not provided
-//
-// If the field is expected to be optional, add the `omitempty` JSON tags. Do NOT use `*Nullable`!
-//
-// Adapted from https://github.com/golang/go/issues/64515#issuecomment-1841057182
-type Nullable[T any] map[bool]T
+// State represents the possible states of a Null value.
+type State uint8
 
-// NewNullableWithValue is a convenience helper to allow constructing a `Nullable` with a given value, for instance to construct a field inside a struct, without introducing an intermediate variable
-func NewNullableWithValue[T any](t T) Nullable[T] {
-	var n Nullable[T]
-	n.Set(t)
-	return n
+// State constants for Null type.
+const (
+	StateUnset State = iota // 0: Value is not set
+	StateNull               // 1: Value is explicitly null
+	StateValid              // 2: Value is valid
+)
+
+// Nullable defines the interface for types that can represent nullability states.
+type Nullable interface {
+	IsNull() bool
+	SetNull()
+	IsSpecified() bool
+	IsZero() bool
+	SetUnspecified()
 }
 
-// NewNullNullable is a convenience helper to allow constructing a `Nullable` with an explicit `null`, for instance to construct a field inside a struct, without introducing an intermediate variable
-func NewNullNullable[T any]() Nullable[T] {
-	var n Nullable[T]
-	n.SetNull()
-	return n
+// Null is a generic type that represents a field with three possible states:
+// - Not set (unset)
+// - Explicitly set to null
+// - Explicitly set to a valid value
+//
+// It implements json.Marshaler and json.Unmarshaler for JSON handling.
+// Use the `omitempty` JSON tag for optional fields.
+type Null[T any] struct {
+	value T     // The underlying value
+	state State // Current state
 }
 
-// Get retrieves the underlying value, if present, and returns a boolean indicating whether the value was present
-func (t Nullable[T]) Get() (T, bool) {
-	var empty T
-	if t.IsNull() {
-		return empty, false
+// Ensure Null implements Nullable, json.Marshaler and json.Unmarshaler
+var _ Nullable = (*Null[any])(nil)
+var _ json.Marshaler = (*Null[any])(nil)
+var _ json.Unmarshaler = (*Null[any])(nil)
+
+// New creates a Null in the unset state.
+func New[T any]() Null[T] {
+	return Null[T]{}
+}
+
+// NewFrom creates a Null with a valid value.
+func NewFrom[T any](t T) Null[T] {
+	return Null[T]{
+		value: t,
+		state: StateValid,
 	}
-	if !t.IsSpecified() {
-		return empty, false
+}
+
+// NewNull creates a Null in the null state.
+func NewNull[T any]() Null[T] {
+	return Null[T]{
+		state: StateNull,
 	}
-	return t[true], true
 }
 
-// MustGet retrieves the underlying value, if present, and panics if the value was not present
-func (t Nullable[T]) MustGet() T {
-	v, ok := t.Get()
-	if !ok {
-		panic("value is not specified")
+// Get retrieves the value and a boolean indicating if it's valid.
+func (n Null[T]) Get() (T, bool) {
+	if n.state != StateValid {
+		var zero T
+		return zero, false
 	}
-	return v
+	return n.value, true
 }
 
-// Set sets the underlying value to a given value
-func (t *Nullable[T]) Set(value T) {
-	*t = map[bool]T{true: value}
+// MustGet retrieves the value or panics if not valid.
+func (n Null[T]) MustGet() T {
+	if v, ok := n.Get(); ok {
+		return v
+	}
+	panic("value is not specified")
 }
 
-// IsNull indicate whether the field was sent, and had a value of `null`
-func (t Nullable[T]) IsNull() bool {
-	_, foundNull := t[false]
-	return foundNull
+// Set sets the value and marks it as valid.
+func (n *Null[T]) Set(value T) {
+	n.value = value
+	n.state = StateValid
 }
 
-// SetNull indicate that the field was sent, and had a value of `null`
-func (t *Nullable[T]) SetNull() {
-	var empty T
-	*t = map[bool]T{false: empty}
+// IsNull checks if the value is explicitly null.
+func (n Null[T]) IsNull() bool {
+	return n.state == StateNull
 }
 
-// IsSpecified indicates whether the field was sent
-func (t Nullable[T]) IsSpecified() bool {
-	return len(t) != 0
+// SetNull sets the value to null.
+func (n *Null[T]) SetNull() {
+	n.value = *new(T)
+	n.state = StateNull
 }
 
-// SetUnspecified indicate whether the field was sent
-func (t *Nullable[T]) SetUnspecified() {
-	*t = map[bool]T{}
+// IsSpecified checks if the value is set (null or valid).
+func (n Null[T]) IsSpecified() bool {
+	return n.state != StateUnset
 }
 
-func (t Nullable[T]) MarshalJSON() ([]byte, error) {
-	// if field was specified, and `null`, marshal it
-	if t.IsNull() {
+// IsZero returns true if the field is unset, supporting omitempty.
+func (n Null[T]) IsZero() bool {
+	return n.state == StateUnset
+}
+
+// SetUnspecified sets the value to unset.
+func (n *Null[T]) SetUnspecified() {
+	n.value = *new(T)
+	n.state = StateUnset
+}
+
+// MarshalJSON implements json.Marshaler.
+func (n Null[T]) MarshalJSON() ([]byte, error) {
+	if n.state == StateNull {
 		return []byte("null"), nil
 	}
-
-	// if field was unspecified, and `omitempty` is set on the field's tags, `json.Marshal` will omit this field
-
+	// if field was unspecified, and `omitempty` is not set on the field's tags, `json.Marshal` will include this field
+	// Unset fields with `omitempty` tag will be omitted by json.Marshal
 	// otherwise: we have a value, so marshal it
-	return json.Marshal(t[true])
+	return json.Marshal(n.value)
 }
 
-func (t *Nullable[T]) UnmarshalJSON(data []byte) error {
-	// if field is unspecified, UnmarshalJSON won't be called
-
-	// if field is specified, and `null`
+// UnmarshalJSON implements json.Unmarshaler.
+func (n *Null[T]) UnmarshalJSON(data []byte) error {
 	if bytes.Equal(data, []byte("null")) {
-		t.SetNull()
+		n.SetNull()
 		return nil
 	}
-	// otherwise, we have an actual value, so parse it
 	var v T
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
-	t.Set(v)
+	n.Set(v)
+
 	return nil
 }

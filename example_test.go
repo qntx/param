@@ -1,18 +1,18 @@
-package nullable_test
+package null_test
 
 import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/oapi-codegen/nullable"
+	"github.com/qntx/null"
 )
 
-func ExampleNewNullNullable() {
+func ExampleNewNull() {
 	p := struct {
-		N nullable.Nullable[int]
+		N null.Null[int]
 	}{}
 
-	p.N = nullable.NewNullNullable[int]()
+	p.N = null.NewNull[int]()
 
 	fmt.Printf("Specified: %v\n", p.N.IsSpecified())
 	fmt.Printf("Null: %v\n", p.N.IsNull())
@@ -21,21 +21,21 @@ func ExampleNewNullNullable() {
 	// Null: true
 }
 
-func ExampleNewNullableWithValue() {
+func ExampleNewFrom() {
 	p := struct {
-		N nullable.Nullable[int]
+		N null.Null[int]
 	}{}
 
-	p.N = nullable.NewNullableWithValue(123)
+	p.N = null.NewFrom(123)
 
 	fmt.Println(p.N.Get())
 	// Output:
 	// 123 <nil>
 }
 
-func ExampleNullable_marshalRequired() {
+func ExampleNull_marshalRequired() {
 	obj := struct {
-		ID nullable.Nullable[int] `json:"id"`
+		ID null.Null[int] `json:"id"`
 	}{}
 
 	// when it's not set (by default)
@@ -116,9 +116,9 @@ func ExampleNullable_marshalRequired() {
 	// ---
 }
 
-func ExampleNullable_marshalOptional() {
+func ExampleNull_marshalOptional() {
 	obj := struct {
-		ID nullable.Nullable[int] `json:"id,omitempty"`
+		ID null.Null[int] `json:"id,omitempty"`
 	}{}
 
 	// when it's not set (by default)
@@ -199,9 +199,9 @@ func ExampleNullable_marshalOptional() {
 	// ---
 }
 
-func ExampleNullable_unmarshalRequired() {
+func ExampleNull_unmarshalRequired() {
 	obj := struct {
-		Name nullable.Nullable[string] `json:"name"`
+		Name null.Null[string] `json:"name"`
 	}{}
 
 	// when it's not set
@@ -301,10 +301,10 @@ func ExampleNullable_unmarshalRequired() {
 	// ---
 }
 
-func ExampleNullable_unmarshalOptional() {
+func ExampleNull_unmarshalOptional() {
 	obj := struct {
-		// Note that there is no pointer for nullable.Nullable when it's
-		Name nullable.Nullable[string] `json:"name,omitempty"`
+		// Note that there is no pointer for null.Null when it's
+		Name null.Null[string] `json:"name,omitempty"`
 	}{}
 
 	// when it's not set
