@@ -8,30 +8,30 @@ import (
 	"github.com/qntx/null"
 )
 
-// TestConstructors verifies the behavior of the New, NewFrom, and NewNull functions.
+// TestConstructors verifies the behavior of the New, From, and Null functions.
 func TestConstructors(t *testing.T) {
-	t.Run("NewFrom should create a valid Nullable", func(t *testing.T) {
-		n := null.NewFrom("hello")
+	t.Run("From should create a valid Nullable", func(t *testing.T) {
+		n := null.From("hello")
 
 		if n.IsNull() {
 			t.Error("Expected IsNull to be false")
 		}
-		if !n.IsSpecified() {
-			t.Error("Expected IsSpecified to be true")
+		if !n.IsSet() {
+			t.Error("Expected IsSet to be true")
 		}
 		if val, ok := n.Get(); !ok || val != "hello" {
 			t.Errorf(`Get() got (%q, %v), want ("hello", true)`, val, ok)
 		}
 	})
 
-	t.Run("NewNull should create a null Nullable", func(t *testing.T) {
-		n := null.NewNull[int]()
+	t.Run("Null should create a null Nullable", func(t *testing.T) {
+		n := null.Null[int]()
 
 		if !n.IsNull() {
 			t.Error("Expected IsNull to be true")
 		}
-		if !n.IsSpecified() {
-			t.Error("Expected IsSpecified to be true")
+		if !n.IsSet() {
+			t.Error("Expected IsSet to be true")
 		}
 		if _, ok := n.Get(); ok {
 			t.Error("Get() on a null value should return false")
@@ -39,18 +39,18 @@ func TestConstructors(t *testing.T) {
 	})
 
 	t.Run("New should create an empty (unspecified) Nullable", func(t *testing.T) {
-		n := null.New[any]()
+		n := null.Zero[any]()
 
 		if n.IsNull() {
 			t.Error("Expected IsNull to be false")
 		}
-		if n.IsSpecified() {
-			t.Error("Expected IsSpecified to be false for a new empty Nullable")
+		if n.IsSet() {
+			t.Error("Expected IsSet to be false for a new empty Nullable")
 		}
 	})
 }
 
-// TestStateChecks validates the IsSpecified and IsNull methods across all states.
+// TestStateChecks validates the IsSet and IsNull methods across all states.
 func TestStateChecks(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -66,19 +66,19 @@ func TestStateChecks(t *testing.T) {
 		},
 		{
 			name:        "Unset (empty map)",
-			n:           null.New[any](),
+			n:           null.Zero[any](),
 			isSpecified: false,
 			isNull:      false,
 		},
 		{
 			name:        "Null",
-			n:           null.NewNull[any](),
+			n:           null.Null[any](),
 			isSpecified: true,
 			isNull:      true,
 		},
 		{
 			name:        "Valid",
-			n:           null.NewFrom[any]("value"),
+			n:           null.From[any]("value"),
 			isSpecified: true,
 			isNull:      false,
 		},
@@ -86,8 +86,8 @@ func TestStateChecks(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := tc.n.IsSpecified(); got != tc.isSpecified {
-				t.Errorf("IsSpecified() got %v, want %v", got, tc.isSpecified)
+			if got := tc.n.IsSet(); got != tc.isSpecified {
+				t.Errorf("IsSet() got %v, want %v", got, tc.isSpecified)
 			}
 			if got := tc.n.IsNull(); got != tc.isNull {
 				t.Errorf("IsNull() got %v, want %v", got, tc.isNull)
@@ -99,7 +99,7 @@ func TestStateChecks(t *testing.T) {
 // TestGetters validates the Get and MustGet methods.
 func TestGetters(t *testing.T) {
 	t.Run("Get on valid value", func(t *testing.T) {
-		n := null.NewFrom(42)
+		n := null.From(42)
 		val, ok := n.Get()
 		if !ok {
 			t.Fatal("Get() returned ok=false for a valid value")
@@ -110,7 +110,7 @@ func TestGetters(t *testing.T) {
 	})
 
 	t.Run("Get on null value", func(t *testing.T) {
-		n := null.NewNull[int]()
+		n := null.Null[int]()
 		_, ok := n.Get()
 		if ok {
 			t.Error("Get() returned ok=true for a null value")
@@ -127,7 +127,7 @@ func TestGetters(t *testing.T) {
 
 	t.Run("MustGet panics", func(t *testing.T) {
 		testCases := map[string]null.Nullable[string]{
-			"for null value":  null.NewNull[string](),
+			"for null value":  null.Null[string](),
 			"for unset value": nil,
 		}
 
@@ -149,7 +149,7 @@ func TestSetters(t *testing.T) {
 	t.Run("Set should make value valid", func(t *testing.T) {
 		var n null.Nullable[string]
 		n.Set("new value")
-		if !n.IsSpecified() || n.IsNull() {
+		if !n.IsSet() || n.IsNull() {
 			t.Error("Set() failed to make value specified and valid")
 		}
 		if val, _ := n.Get(); val != "new value" {
@@ -158,17 +158,17 @@ func TestSetters(t *testing.T) {
 	})
 
 	t.Run("SetNull should make value null", func(t *testing.T) {
-		n := null.NewFrom("initial value")
+		n := null.From("initial value")
 		n.SetNull()
-		if !n.IsSpecified() || !n.IsNull() {
+		if !n.IsSet() || !n.IsNull() {
 			t.Error("SetNull() failed to make value specified and null")
 		}
 	})
 
 	t.Run("SetUnspecified should make value unspecified", func(t *testing.T) {
-		n := null.NewFrom("initial value")
-		n.SetUnspecified()
-		if n.IsSpecified() {
+		n := null.From("initial value")
+		n.Reset()
+		if n.IsSet() {
 			t.Error("SetUnspecified() failed to make value unspecified")
 		}
 	})
@@ -190,18 +190,18 @@ func TestJSONMarshaling(t *testing.T) {
 		{
 			name: "All fields valid",
 			input: Payload{
-				Required: null.NewFrom("hello"),
-				Optional: null.NewFrom(123),
-				Always:   null.NewFrom(true),
+				Required: null.From("hello"),
+				Optional: null.From(123),
+				Always:   null.From(true),
 			},
 			want: `{"required":"hello","optional":123,"always":true}`,
 		},
 		{
 			name: "Optional field is unset and omitted",
 			input: Payload{
-				Required: null.NewFrom("world"),
+				Required: null.From("world"),
 				Optional: nil, // Unset, so it should be omitted
-				Always:   null.NewNull[bool](),
+				Always:   null.Null[bool](),
 			},
 			want: `{"required":"world","always":null}`,
 		},
@@ -209,8 +209,8 @@ func TestJSONMarshaling(t *testing.T) {
 			name: "Required field is unset (marshals to null)",
 			input: Payload{
 				Required: nil, // Unset, but without omitempty
-				Optional: null.NewFrom(42),
-				Always:   null.NewFrom(false),
+				Optional: null.From(42),
+				Always:   null.From(false),
 			},
 			want: `{"required":"","optional":42,"always":false}`,
 		},
@@ -251,7 +251,7 @@ func TestJSONUnmarshaling(t *testing.T) {
 		if err := json.Unmarshal([]byte(input), &p); err != nil {
 			t.Fatalf("json.Unmarshal() failed: %v", err)
 		}
-		if !p.Optional.IsSpecified() == false {
+		if !p.Optional.IsSet() == false {
 			t.Error("A missing field should be Unspecified")
 		}
 		if p.Required.MustGet() != "world" {

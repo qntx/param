@@ -7,26 +7,26 @@ import (
 	"github.com/qntx/null"
 )
 
-func ExampleNewNull() {
+func ExampleNull() {
 	p := struct {
 		N null.Nullable[int]
 	}{}
 
-	p.N = null.NewNull[int]()
+	p.N = null.Null[int]()
 
-	fmt.Printf("Specified: %v\n", p.N.IsSpecified())
+	fmt.Printf("Specified: %v\n", p.N.IsSet())
 	fmt.Printf("Nullable: %v\n", p.N.IsNull())
 	// Output:
 	// Specified: true
 	// Nullable: true
 }
 
-func ExampleNewFrom() {
+func ExampleFrom() {
 	p := struct {
 		N null.Nullable[int]
 	}{}
 
-	p.N = null.NewFrom(123)
+	p.N = null.From(123)
 
 	fmt.Println(p.N.Get())
 	// Output:
@@ -49,7 +49,7 @@ func ExampleNull_marshalRequired() {
 	fmt.Println("---")
 
 	// when it's not set (explicitly)
-	obj.ID.SetUnspecified()
+	obj.ID.Reset()
 
 	b, err = json.Marshal(obj)
 	if err != nil {
@@ -132,7 +132,7 @@ func ExampleNull_marshalOptional() {
 	fmt.Println("---")
 
 	// when it's not set (explicitly)
-	obj.ID.SetUnspecified()
+	obj.ID.Reset()
 
 	b, err = json.Marshal(obj)
 	if err != nil {
@@ -214,7 +214,7 @@ func ExampleNull_unmarshalRequired() {
 		return
 	}
 	fmt.Println("Unspecified:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	fmt.Println("---")
 
@@ -229,7 +229,7 @@ func ExampleNull_unmarshalRequired() {
 		return
 	}
 	fmt.Println("Nullable:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	fmt.Println("---")
 
@@ -244,7 +244,7 @@ func ExampleNull_unmarshalRequired() {
 		return
 	}
 	fmt.Println("Zero value:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	val, ok := obj.Name.Get()
 	if !ok {
@@ -267,7 +267,7 @@ func ExampleNull_unmarshalRequired() {
 	}
 
 	fmt.Println("Value:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	val, ok = obj.Name.Get()
 	if !ok {
@@ -280,21 +280,21 @@ func ExampleNull_unmarshalRequired() {
 
 	// Output:
 	// Unspecified:
-	// obj.Name.IsSpecified(): false
+	// obj.Name.IsSet(): false
 	// obj.Name.IsNull(): false
 	// ---
 	// Nullable:
-	// obj.Name.IsSpecified(): true
+	// obj.Name.IsSet(): true
 	// obj.Name.IsNull(): true
 	// ---
 	// Zero value:
-	// obj.Name.IsSpecified(): true
+	// obj.Name.IsSet(): true
 	// obj.Name.IsNull(): false
 	// obj.Name.Get(): "" <nil>
 	// obj.Name.MustGet(): ""
 	// ---
 	// Value:
-	// obj.Name.IsSpecified(): true
+	// obj.Name.IsSet(): true
 	// obj.Name.IsNull(): false
 	// obj.Name.Get(): "foo" <nil>
 	// obj.Name.MustGet(): "foo"
@@ -317,7 +317,7 @@ func ExampleNull_unmarshalOptional() {
 		return
 	}
 	fmt.Println("Unspecified:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	fmt.Println("---")
 
@@ -332,7 +332,7 @@ func ExampleNull_unmarshalOptional() {
 		return
 	}
 	fmt.Println("Nullable:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	fmt.Println("---")
 
@@ -347,7 +347,7 @@ func ExampleNull_unmarshalOptional() {
 		return
 	}
 	fmt.Println("Zero value:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	val, ok := obj.Name.Get()
 	if !ok {
@@ -370,7 +370,7 @@ func ExampleNull_unmarshalOptional() {
 	}
 
 	fmt.Println("Value:")
-	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
+	fmt.Printf("obj.Name.IsSet(): %v\n", obj.Name.IsSet())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	val, ok = obj.Name.Get()
 	if !ok {
@@ -383,21 +383,21 @@ func ExampleNull_unmarshalOptional() {
 
 	// Output:
 	// Unspecified:
-	// obj.Name.IsSpecified(): false
+	// obj.Name.IsSet(): false
 	// obj.Name.IsNull(): false
 	// ---
 	// Nullable:
-	// obj.Name.IsSpecified(): true
+	// obj.Name.IsSet(): true
 	// obj.Name.IsNull(): true
 	// ---
 	// Zero value:
-	// obj.Name.IsSpecified(): true
+	// obj.Name.IsSet(): true
 	// obj.Name.IsNull(): false
 	// obj.Name.Get(): "" <nil>
 	// obj.Name.MustGet(): ""
 	// ---
 	// Value:
-	// obj.Name.IsSpecified(): true
+	// obj.Name.IsSet(): true
 	// obj.Name.IsNull(): false
 	// obj.Name.Get(): "foo" <nil>
 	// obj.Name.MustGet(): "foo"

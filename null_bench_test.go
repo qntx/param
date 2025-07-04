@@ -36,8 +36,8 @@ var (
 
 	// Data using the custom Nullable type.
 	nullableData = NullablePayload{
-		ID:    null.NewFrom(idValue),
-		Name:  null.NewNull[string](),
+		ID:    null.From(idValue),
+		Name:  null.Null[string](),
 		Email: nil, // Unset, will be omitted.
 	}
 

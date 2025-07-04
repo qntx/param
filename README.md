@@ -35,17 +35,17 @@ type UserPayload struct {
 
 ```go
 payload := UserPayload{
-    Name: null.NewFrom("Alice"), // Valid
-    Age:  null.NewNull[int](),   // Null
-    Bio:  null.Nullable[string]{}, // Unset
+    Name: null.From("Alice"),  // Valid
+    Age:  null.Null[int](),    // Null
+    Bio:  null.Zero[string](), // Unset
 }
 
 data, _ := json.Marshal(payload)
 fmt.Println(string(data)) // {"name":"Alice","age":null,"bio":null}
 
 payload2 := UserPayload{
-    Name: null.NewFrom("Bob"),
-    Bio:  null.NewNull[string](),
+    Name: null.From("Bob"),
+    Bio:  null.Null[string](),
 }
 
 data, _ = json.Marshal(payload2)
