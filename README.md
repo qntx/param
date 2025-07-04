@@ -1,29 +1,74 @@
-# Null
+# null
 
-> An implementation of a `Null` type for JSON bodies, indicating whether the field is absent, set to null, or set to a value
+A Go `Nullable` type for JSON APIs, handling three states: **valid**, **null**, or **unset**. Ideal for `PATCH` requests and optional fields.
 
-Unlike other known implementations, this makes it possible to both marshal and unmarshal the value, as well as represent all three states:
+## Why?
 
-- the field is _not set_
-- the field is _explicitly set to null_
-- the field is _explicitly set to a given value_
+Go's `encoding/json` struggles to distinguish **absent** fields from **explicit null** in JSON. Existing solutions like `sql.NullString` or `guregu/null` are two-state and fail with `omitempty`. This library uses a generic `map[bool]T` to cleanly handle all three states.
 
-And can be embedded in structs, for instance with the following definition:
+## Features
+
+- **Tri-State**: Differentiates valid, null, and unset.
+- **Type-Safe**: Generic support for any type (`[T any]`).
+- **Idiomatic**: Simple API, seamless with `omitempty`.
+- **Self-Contained**: No custom struct methods needed.
+
+## Installation
+
+```bash
+go get github.com/qntx/null
+```
+
+## Example
+
+### Struct
 
 ```go
-obj := struct {
-    // RequiredID is a required, Null field
-    RequiredID     null.Null[int]     `json:"id"`
-    // OptionalString is an optional, Null field
-    // NOTE that no pointer is required, only `omitempty`
-    OptionalString null.Null[string] `json:"optionalString,omitempty"`
-}{}
+、type UserPayload struct {
+    Name null.Nullable[string] `json:"name,omitempty"`
+    Age  null.Nullable[int]    `json:"age,omitempty"`
+    Bio  null.Nullable[string] `json:"bio"`
+}
 ```
+
+### Marshaling
+
+```go
+payload := UserPayload{
+    Name: null.NewFrom("Alice"), // Valid
+    Age:  null.NewNull[int](),   // Null
+    Bio:  null.Nullable[string]{}, // Unset
+}
+
+data, _ := json.Marshal(payload)
+fmt.Println(string(data)) // {"name":"Alice","age":null,"bio":null}
+
+payload2 := UserPayload{
+    Name: null.NewFrom("Bob"),
+    Bio:  null.NewNull[string](),
+}
+
+data, _ = json.Marshal(payload2)
+fmt.Println(string(data)) // {"name":"Bob","bio":null}
+```
+
+## Performance
+
+`Nullable` is ~3x slower than pointers for marshaling and ~2x for unmarshaling due to its `map` internals. For most APIs, this nanosecond overhead is negligible compared to the clarity and correctness gained.
+
+The following benchmarks were run on a `13th Gen Intel(R) Core(TM) i7-13700H` CPU.
+
+| Benchmark                    | Operations   | Time/Op       | Memory/Op  | Allocations/Op |
+| ---------------------------- | ------------ | ------------- | ---------- | -------------- |
+| **Marshal (This Library)**   | `3,598,364`  | `336.1 ns/op` | `72 B/op`  | `5 allocs/op`  |
+| Marshal (Native Pointers)    | `10,764,397` | `112.0 ns/op` | `48 B/op`  | `2 allocs/op`  |
+| **Unmarshal (This Library)** | `1,708,104`  | `707.7 ns/op` | `816 B/op` | `10 allocs/op` |
+| Unmarshal (Native Pointers)  | `3,508,210`  | `337.1 ns/op` | `216 B/op` | `4 allocs/op`  |
 
 ## License
 
 MIT
 
-## Acknowledgments
+## Acknowledgements
 
-- [Nullable](https://github.com/oapi-codegen/Nullable)  
+- Inspired by [`oapi-codegen/Nullable`](https://github.com/oapi-codegen/Nullable) and the discussion in [Go Issue #64515](https://github.com/golang/go/issues/64515#issuecomment-1841057182).

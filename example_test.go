@@ -9,33 +9,33 @@ import (
 
 func ExampleNewNull() {
 	p := struct {
-		N null.Null[int]
+		N null.Nullable[int]
 	}{}
 
 	p.N = null.NewNull[int]()
 
 	fmt.Printf("Specified: %v\n", p.N.IsSpecified())
-	fmt.Printf("Null: %v\n", p.N.IsNull())
+	fmt.Printf("Nullable: %v\n", p.N.IsNull())
 	// Output:
 	// Specified: true
-	// Null: true
+	// Nullable: true
 }
 
 func ExampleNewFrom() {
 	p := struct {
-		N null.Null[int]
+		N null.Nullable[int]
 	}{}
 
 	p.N = null.NewFrom(123)
 
 	fmt.Println(p.N.Get())
 	// Output:
-	// 123 <nil>
+	// 123 true
 }
 
 func ExampleNull_marshalRequired() {
 	obj := struct {
-		ID null.Null[int] `json:"id"`
+		ID null.Nullable[int] `json:"id"`
 	}{}
 
 	// when it's not set (by default)
@@ -68,7 +68,7 @@ func ExampleNull_marshalRequired() {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
-	fmt.Println("Null:")
+	fmt.Println("Nullable:")
 	fmt.Printf(`JSON: %s`+"\n", b)
 	fmt.Println("---")
 
@@ -105,7 +105,7 @@ func ExampleNull_marshalRequired() {
 	// Unspecified:
 	// JSON: {"id":0}
 	// ---
-	// Null:
+	// Nullable:
 	// JSON: {"id":null}
 	// ---
 	// Zero value:
@@ -118,7 +118,7 @@ func ExampleNull_marshalRequired() {
 
 func ExampleNull_marshalOptional() {
 	obj := struct {
-		ID null.Null[int] `json:"id,omitempty"`
+		ID null.Nullable[int] `json:"id,omitempty"`
 	}{}
 
 	// when it's not set (by default)
@@ -151,7 +151,7 @@ func ExampleNull_marshalOptional() {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
-	fmt.Println("Null:")
+	fmt.Println("Nullable:")
 	fmt.Printf(`JSON: %s`+"\n", b)
 	fmt.Println("---")
 
@@ -188,7 +188,7 @@ func ExampleNull_marshalOptional() {
 	// Unspecified:
 	// JSON: {}
 	// ---
-	// Null:
+	// Nullable:
 	// JSON: {"id":null}
 	// ---
 	// Zero value:
@@ -201,7 +201,7 @@ func ExampleNull_marshalOptional() {
 
 func ExampleNull_unmarshalRequired() {
 	obj := struct {
-		Name null.Null[string] `json:"name"`
+		Name null.Nullable[string] `json:"name"`
 	}{}
 
 	// when it's not set
@@ -228,7 +228,7 @@ func ExampleNull_unmarshalRequired() {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
-	fmt.Println("Null:")
+	fmt.Println("Nullable:")
 	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	fmt.Println("---")
@@ -283,7 +283,7 @@ func ExampleNull_unmarshalRequired() {
 	// obj.Name.IsSpecified(): false
 	// obj.Name.IsNull(): false
 	// ---
-	// Null:
+	// Nullable:
 	// obj.Name.IsSpecified(): true
 	// obj.Name.IsNull(): true
 	// ---
@@ -303,8 +303,8 @@ func ExampleNull_unmarshalRequired() {
 
 func ExampleNull_unmarshalOptional() {
 	obj := struct {
-		// Note that there is no pointer for null.Null when it's
-		Name null.Null[string] `json:"name,omitempty"`
+		// Note that there is no pointer for null.Nullable when it's
+		Name null.Nullable[string] `json:"name,omitempty"`
 	}{}
 
 	// when it's not set
@@ -331,7 +331,7 @@ func ExampleNull_unmarshalOptional() {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
-	fmt.Println("Null:")
+	fmt.Println("Nullable:")
 	fmt.Printf("obj.Name.IsSpecified(): %v\n", obj.Name.IsSpecified())
 	fmt.Printf("obj.Name.IsNull(): %v\n", obj.Name.IsNull())
 	fmt.Println("---")
@@ -386,7 +386,7 @@ func ExampleNull_unmarshalOptional() {
 	// obj.Name.IsSpecified(): false
 	// obj.Name.IsNull(): false
 	// ---
-	// Null:
+	// Nullable:
 	// obj.Name.IsSpecified(): true
 	// obj.Name.IsNull(): true
 	// ---
