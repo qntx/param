@@ -24,7 +24,7 @@ go get github.com/qntx/null
 ### Struct
 
 ```go
-、type UserPayload struct {
+type UserPayload struct {
     Name null.Nullable[string] `json:"name,omitempty"`
     Age  null.Nullable[int]    `json:"age,omitempty"`
     Bio  null.Nullable[string] `json:"bio"`
@@ -71,4 +71,4 @@ MIT
 
 ## Acknowledgements
 
-- Inspired by [`oapi-codegen/Nullable`](https://github.com/oapi-codegen/Nullable) and the discussion in [Go Issue #64515](https://github.com/golang/go/issues/64515#issuecomment-1841057182).
+- Inspired by [`oapi-codegen/Nullable`](https://github.com/oapi-codegen/Nullable) and the discussion in [Go Issue #64515](https://github.com/golang/go/issues/64515#issuecomment-1841024193).
