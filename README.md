@@ -41,7 +41,7 @@ payload := UserPayload{
 }
 
 data, _ := json.Marshal(payload)
-fmt.Println(string(data)) // {"name":"Alice","age":null,"bio":null}
+fmt.Println(string(data)) // {"name":"Alice","age":null,"bio":""}
 
 payload2 := UserPayload{
     Name: null.From("Bob"),
