@@ -1,3 +1,3 @@
-module github.com/qntx/null
+module github.com/qntx/param
 
 go 1.22

@@ -1,46 +1,46 @@
-package null
+package param
 
 import (
 	"bytes"
 	"encoding/json"
 )
 
-// JSONNullable defines the interface for types that can represent JSON nullability states.
-type JSONNullable interface {
+// JSONOpt defines the interface for types that can represent JSON nullability states.
+type JSONOpt interface {
 	IsNull() bool
 	SetNull()
 	IsSet() bool
 	Reset()
 }
 
-// Nullable is a generic type that implements a field with three possible states:
+// Opt is a generic type that implements a field with three possible states:
 // - field is not set in the request
 // - field is explicitly set to `null` in the request
 // - field is explicitly set to a valid value in the request
-type Nullable[T any] map[bool]T
+type Opt[T any] map[bool]T
 
-// Ensure Nullable implements JSONNullable, json.Marshaler, and json.Unmarshaler
-var _ JSONNullable = (*Nullable[any])(nil)
-var _ json.Marshaler = (*Nullable[any])(nil)
-var _ json.Unmarshaler = (*Nullable[any])(nil)
+// Ensure Opt implements JSONOpt, json.Marshaler, and json.Unmarshaler
+var _ JSONOpt = (*Opt[any])(nil)
+var _ json.Marshaler = (*Opt[any])(nil)
+var _ json.Unmarshaler = (*Opt[any])(nil)
 
-// Zero constructs a Nullable[T] in the unset state, representing a field not provided in a JSON request.
-func Zero[T any]() Nullable[T] {
-	return make(Nullable[T])
+// Zero constructs a Opt[T] in the unset state, representing a field not provided in a JSON request.
+func Zero[T any]() Opt[T] {
+	return make(Opt[T])
 }
 
-// From constructs a Nullable[T] with the given value, representing a field explicitly set in a JSON request.
-func From[T any](value T) Nullable[T] {
+// From constructs a Opt[T] with the given value, representing a field explicitly set in a JSON request.
+func From[T any](value T) Opt[T] {
 	return map[bool]T{true: value}
 }
 
-// Null constructs a Nullable[T] with an explicit `null`, representing a field set to `null` in a JSON request.
-func Null[T any]() Nullable[T] {
+// Null constructs a Opt[T] with an explicit `null`, representing a field set to `null` in a JSON request.
+func Null[T any]() Opt[T] {
 	return map[bool]T{false: *new(T)}
 }
 
 // Get retrieves the underlying value, if present, and returns an empty value and `false` if not present.
-func (t Nullable[T]) Get() (T, bool) {
+func (t Opt[T]) Get() (T, bool) {
 	var empty T
 	if t.IsNull() {
 		return empty, false
@@ -52,7 +52,7 @@ func (t Nullable[T]) Get() (T, bool) {
 }
 
 // MustGet retrieves the underlying value, if present, and panics if not present.
-func (t Nullable[T]) MustGet() T {
+func (t Opt[T]) MustGet() T {
 	v, ok := t.Get()
 	if !ok {
 		panic("value is not set or null")
@@ -61,32 +61,32 @@ func (t Nullable[T]) MustGet() T {
 }
 
 // Set sets the underlying value to a given value.
-func (t *Nullable[T]) Set(value T) {
+func (t *Opt[T]) Set(value T) {
 	*t = map[bool]T{true: value}
 }
 
 // IsNull indicates whether the field was sent and had a value of `null`.
-func (t Nullable[T]) IsNull() bool {
+func (t Opt[T]) IsNull() bool {
 	_, foundNull := t[false]
 	return foundNull
 }
 
 // SetNull sets the field to an explicit `null`.
-func (t *Nullable[T]) SetNull() {
+func (t *Opt[T]) SetNull() {
 	*t = map[bool]T{false: *new(T)}
 }
 
 // IsSet indicates whether the field was sent (either as null or a value).
-func (t Nullable[T]) IsSet() bool {
+func (t Opt[T]) IsSet() bool {
 	return len(t) != 0
 }
 
 // Reset clears the field, making it unset.
-func (t *Nullable[T]) Reset() {
+func (t *Opt[T]) Reset() {
 	*t = map[bool]T{}
 }
 
-func (t Nullable[T]) MarshalJSON() ([]byte, error) {
+func (t Opt[T]) MarshalJSON() ([]byte, error) {
 	if t.IsNull() {
 		return []byte("null"), nil
 	}
@@ -97,7 +97,7 @@ func (t Nullable[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t[true])
 }
 
-func (t *Nullable[T]) UnmarshalJSON(data []byte) error {
+func (t *Opt[T]) UnmarshalJSON(data []byte) error {
 	if bytes.Equal(data, []byte("null")) {
 		t.SetNull()
 		return nil

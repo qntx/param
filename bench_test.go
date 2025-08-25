@@ -1,20 +1,20 @@
-package null_test
+package param_test
 
 import (
 	"encoding/json"
 	"testing"
 
-	"github.com/qntx/null"
+	"github.com/qntx/param"
 )
 
 // blackhole is used to prevent the compiler from optimizing away benchmark results.
 var blackhole any
 
-// NullablePayload uses the custom null.Nullable[T] type.
-type NullablePayload struct {
-	ID    null.Nullable[int]    `json:"id"`
-	Name  null.Nullable[string] `json:"name"`
-	Email null.Nullable[string] `json:"email,omitempty"` // For omitempty test
+// OptPayload uses the custom null.Opt[T] type.
+type OptPayload struct {
+	ID    param.Opt[int]    `json:"id"`
+	Name  param.Opt[string] `json:"name"`
+	Email param.Opt[string] `json:"email,omitempty"` // For omitempty test
 }
 
 // PointerPayload uses the standard Go pointer types for nullability.
@@ -34,10 +34,10 @@ var (
 
 	// Pre-constructed structs for marshaling benchmarks.
 
-	// Data using the custom Nullable type.
-	nullableData = NullablePayload{
-		ID:    null.From(idValue),
-		Name:  null.Null[string](),
+	// Data using the custom Opt type.
+	OptData = OptPayload{
+		ID:    param.From(idValue),
+		Name:  param.Null[string](),
 		Email: nil, // Unset, will be omitted.
 	}
 
@@ -49,14 +49,14 @@ var (
 	}
 )
 
-// BenchmarkMarshal_WithNullable tests the performance of marshaling a struct that uses null.Nullable[T].
-func BenchmarkMarshal_WithNullable(b *testing.B) {
+// BenchmarkMarshal_WithOpt tests the performance of marshaling a struct that uses null.Opt[T].
+func BenchmarkMarshal_WithOpt(b *testing.B) {
 	b.ReportAllocs()
 	var r []byte
 	var err error
 
 	for i := 0; i < b.N; i++ {
-		r, err = json.Marshal(nullableData)
+		r, err = json.Marshal(OptData)
 	}
 
 	blackhole = r
@@ -81,10 +81,10 @@ func BenchmarkMarshal_WithPointers(b *testing.B) {
 	}
 }
 
-// BenchmarkUnmarshal_WithNullable tests the performance of unmarshaling into a struct that uses null.Nullable[T].
-func BenchmarkUnmarshal_WithNullable(b *testing.B) {
+// BenchmarkUnmarshal_WithOpt tests the performance of unmarshaling into a struct that uses null.Opt[T].
+func BenchmarkUnmarshal_WithOpt(b *testing.B) {
 	b.ReportAllocs()
-	var p NullablePayload
+	var p OptPayload
 	var err error
 
 	for i := 0; i < b.N; i++ {
