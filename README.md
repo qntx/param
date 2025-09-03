@@ -35,16 +35,16 @@ type UserPayload struct {
 
 ```go
 payload := UserPayload{
-    Name: param.From("Alice"),  // Valid
-    Age:  param.Null[int](),    // Null
-    Bio:  param.Zero[string](), // Unset
+    Name: param.String("Alice"),  // Valid
+    Age:  param.Int(123),         // Valid
+    Bio:  param.Zero[string](),   // Unset
 }
 
 data, _ := json.Marshal(payload)
 fmt.Println(string(data)) // {"name":"Alice","age":null,"bio":""}
 
 payload2 := UserPayload{
-    Name: param.From("Bob"),
+    Name: param.String("Bob"),
     Bio:  param.Null[string](),
 }
 

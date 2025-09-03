@@ -26,7 +26,7 @@ func ExampleFrom() {
 		N param.Opt[int]
 	}{}
 
-	p.N = param.From(123)
+	p.N = param.Int(123)
 
 	fmt.Println(p.N.Get())
 	// Output:
